@@ -1,0 +1,118 @@
+---
+title: "shark_population"
+author: "Camille Kaczmar"
+date: "2024-03-17"
+output: html_document
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+# Simulate shark population growth over time using logistic growth model with a parameter
+#'
+#' This function simulates the growth of a shark population over a specified
+#' number of time steps using a logistic growth model. It includes a parameter
+#' representing a potential threat or environmental factor affecting the shark
+#' population dynamics.
+#'
+#' @param initial_population The initial population of sharks.
+#' @param growth_rate The growth rate of the shark population.
+#' @param carrying_capacity The carrying capacity of the environment for sharks.
+#' @param time_steps The number of time steps to simulate.
+#' @param threat_factor A parameter representing a potential threat or environmental factor.
+#'
+#' @return A numeric vector representing the shark population at each time step.
+#'
+#' @examples
+#' \dontrun{
+#' shark_population <- simulate_shark_population(50, 0.1, 1000, 50, threat_factor = 0.8)
+#' plot(shark_population, type = 'l', xlab = 'Time Steps', ylab = 'Population', main = 'Shark Population Growth')
+#' }
+#'
+simulate_shark_population <- function(initial_population, growth_rate, carrying_capacity, time_steps, threat_factor = 1) {
+  # Error checking
+  if (!is.numeric(initial_population) || !is.numeric(growth_rate) ||
+      !is.numeric(carrying_capacity) || !is.numeric(time_steps) ||
+      !is.numeric(threat_factor) ||
+      any(c(initial_population, growth_rate, carrying_capacity, time_steps, threat_factor) <= 0)) {
+    stop("Invalid input. All parameters must be positive numbers.")
+  }
+
+  # Initialize a vector to store the shark population at each time step
+  shark_population <- numeric(time_steps)
+
+  # Simulate population growth using logistic growth model with a threat factor
+  shark_population[1] <- initial_population
+  for (t in 2:time_steps) {
+    growth <- growth_rate * shark_population[t - 1] * (1 - shark_population[t - 1] / carrying_capacity) * threat_factor
+    shark_population[t] <- shark_population[t - 1] + growth
+  }
+
+  # Return the simulated shark population vector
+  return(shark_population)
+}
+
+# Example usage
+# Uncomment the lines below to run the example
+# shark_population <- simulate_shark_population(50, 0.1, 1000, 50, threat_factor = 0.8)
+# plot(shark_population, type = 'l', xlab = 'Time Steps', ylab = 'Population', main = 'Shark Population Growth')
+
+```
+
+
+```{r}
+# Shark Population Simulation
+
+#Generate data for inputs
+set.seed(123)
+initial_populations <- runif(5, min = 50, max = 200)
+growth_rates <- runif(5, min = 0.05, max = 0.2)
+```
+
+
+```{r}
+# Initialize an empty list to store results
+for_loop_results <- list()
+
+# Run the simulation for each set of inputs using a for loop
+for (i in seq_along(initial_populations)) {
+  result <- simulate_shark_population(
+    initial_population = initial_populations[i],
+    growth_rate = growth_rates[i],
+    carrying_capacity = 1000,
+    time_steps = 50,
+    threat_factor = 1
+  )
+  
+  for_loop_results[[i]] <- result
+}
+```
+
+
+```{r}
+# Run simulation using purr package
+# Load the purrr package
+library(purrr)
+
+# Use purrr::pmap to run the simulation for each set of inputs
+purrr_results <- pmap(
+  list(initial_population = initial_populations,
+       growth_rate = growth_rates,
+       carrying_capacity = rep(1000, length(initial_populations)),
+       time_steps = rep(50, length(initial_populations)),
+       threat_factor = rep(1, length(initial_populations))),
+  simulate_shark_population
+)
+```
+
+```{r}
+# Graph RESULTS 
+# Plot the results from the for loop
+plot(1:50, for_loop_results[[1]], type = 'l', col = 'blue', xlab = 'Time Steps', ylab = 'Population', main = 'Shark Population Simulation - For Loop')
+lines(1:50, for_loop_results[[2]], col = 'red')
+
+# Plot the results from purrr
+plot(1:50, purrr_results[[1]], type = 'l', col = 'blue', xlab = 'Time Steps', ylab = 'Population', main = 'Shark Population Simulation - purrr')
+lines(1:50, purrr_results[[2]], col = 'red')
+```
+```
+
