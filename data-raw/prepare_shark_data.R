@@ -13,8 +13,8 @@ library(purrr)
 simulation_results <- list()
 
 # Loop through each region
-for (i in seq_along(regions)) {
-  region <- regions[i]
+for (i in seq_along(region)) {
+  region <- region[i]
   # Simulate shark population for the given region over the specified years
   population_simulations <- map_dbl(1:years, ~simulate_shark_population(
     initial_population = initial_population[i],
